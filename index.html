@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Номерок</title>
+    <!-- Скрипт Telegram -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Базовые настройки */
+        :root {
+            --bg: #f2f2f7;
+            --text: #000;
+            --card-bg: #fff;
+            --accent: #34c759;
+            --gold: #d4af37;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: var(--card-bg);
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .balance {
+            font-weight: bold;
+            font-size: 18px;
+            text-align: right;
+        }
+        .balance-sub {
+            font-size: 10px;
+            color: gray;
+        }
+
+        /* Меню */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .tab {
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .tab.active {
+            background: #e5e5ea;
+        }
+
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            padding: 0 15px;
+            overflow-y: auto;
+        }
+
+        /* Реклама */
+        .banner {
+            background: linear-gradient(90deg, #ffd8a8, #ffc078);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #333;
+            position: relative;
+        }
+
+        /* Карточка с номером */
+        .number-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .rarity {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+            color: #b8860b;
+            margin-bottom: 15px;
+        }
+        .rarity-bar {
+            display: flex;
+            gap: 5px;
+        }
+        .rarity-bar div {
+            width: 20px;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e5ea;
+        }
+        .rarity-bar div.active {
+            background: #d4af37;
+        }
+
+        /* Визуал номера (Отрисовка) */
+        .plate-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+        .license-plate {
+            background: #fff;
+            border: 4px solid #333;
+            border-radius: 8px;
+            padding: 5px 15px;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .plate-flag {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .flag-img {
+            width: 20px;
+            height: 14px;
+            background: linear-gradient(to bottom, #d52b1e 33%, #0039a6 33%, #0039a6 66%, #d52b1e 66%);
+            border: 1px solid #ccc;
+            margin-bottom: 2px;
+        }
+        .plate-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 40px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #111;
+        }
+
+        .stats {
+            font-size: 12px;
+            color: gray;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+        .stats span {
+            color: var(--gold);
+        }
+
+        /* Кнопка */
+        .btn-roll {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(52, 199, 89, 0.4);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn-roll:active {
+            transform: scale(0.98);
+        }
+        .btn-roll span {
+            background: rgba(255,255,255,0.3);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        /* Нижнее меню */
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            background: var(--card-bg);
+            padding: 10px 0;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            color: gray;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: var(--accent);
+        }
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Шапка -->
+    <div class="header">
+        <div>
+            <div style="font-size: 12px; color: gray;">Ур. 83</div>
+            <div style="font-weight: bold;">🍀 80</div>
+        </div>
+        <div style="text-align: right;">
+            <div class="balance-sub">БАЛАНС</div>
+            <div class="balance" id="balanceDisplay">595,8 млн ₽</div>
+        </div>
+    </div>
+
+    <!-- Табы -->
+    <div class="tabs">
+        <div class="tab active">Номера</div>
+        <div class="tab">Машины</div>
+        <div class="tab">⭐ Магазин</div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="main-content">
+        <!-- Реклама -->
+        <div class="banner">
+            🍀 Удача x10 БЕСПЛАТНО<br>
+            <span style="font-size: 12px; font-weight: normal;">Задание - Удача x10 на 1 час</span>
+        </div>
+
+        <!-- Карточка -->
+        <div class="number-card">
+            <div class="rarity">
+                <span>Легендарный</span>
+                <span id="priceDisplay">1 473 855 ₽</span>
+            </div>
+            
+            <div class="rarity-bar">
+                <div class="active"></div>
+                <div class="active"></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+
+            <!-- Сам номер -->
+            <div class="plate-container">
+                <div class="license-plate">
+                    <div class="plate-flag">
+                        <div class="flag-img"></div>
+                        <div>AM</div>
+                    </div>
+                    <div class="plate-text" id="numberDisplay">93 GT 111</div>
+                </div>
+            </div>
+
+            <!-- Инфо -->
+            <div class="stats">
+                Код 93 - Армения<br><br>
+                🍀 Удача: лучший из 10 номеров<br>
+                Премиум-серия «GT» с круглыми цифрами <span>x30</span><br>
+                Три одинаковые цифры <span>x150</span>
+            </div>
+        </div>
+
+        <!-- Кнопка крутки -->
+        <button class="btn-roll" onclick="rollNumber()">
+            Крутить ещё <span>780 000 ₽</span>
+        </button>
+    </div>
+
+    <!-- Навигация -->
+    <div class="nav">
+        <div class="nav-item active">
+            <div class="nav-icon">▶️</div>
+            Играть
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">🏠</div>
+            Гараж
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">🏪</div>
+            Рынок
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">👥</div>
+            Друзья
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">⚙️</div>
+            Ещё
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        tg.setHeaderColor('#f2f2f7'); // Цвет шапки как у фона
+
+        // Логика кнопки
+        function rollNumber() {
+            const btn = document.querySelector('.btn-roll');
+            btn.innerText = "Крутим...";
+            
+            // Имитация загрузки (в реальности тут запрос к твоему Python-серверу)
+            setTimeout(() => {
+                // Меняем номер (рандом для визуала)
+                const letters = "АВЕКМНОРСТУХ";
+                const l1 = letters[Math.floor(Math.random() * letters.length)];
+                const l2 = letters[Math.floor(Math.random() * letters.length)];
+                const digits = Math.floor(Math.random() * 999) + 1;
+                
+                document.getElementById('numberDisplay').innerText = `77 ${l1}${l2} ${digits}`;
+                
+                // Восстанавливаем кнопку
+                btn.innerHTML = 'Крутить ещё <span>780 000 ₽</span>';
+                
+                // Вибрация (если поддерживается)
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
