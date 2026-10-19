@@ -1,347 +1,193 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Номерок</title>
-    <!-- Скрипт Telegram -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        /* Базовые настройки */
-        :root {
-            --bg: #f2f2f7;
-            --text: #000;
-            --card-bg: #fff;
-            --accent: #34c759;
-            --gold: #d4af37;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Шапка */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: var(--card-bg);
-            border-radius: 0 0 20px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            z-index: 10;
-        }
-        .balance {
-            font-weight: bold;
-            font-size: 18px;
-            text-align: right;
-        }
-        .balance-sub {
-            font-size: 10px;
-            color: gray;
-        }
-
-        /* Меню */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            padding: 15px;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        .tab {
-            padding: 8px 16px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .tab.active {
-            background: #e5e5ea;
-        }
-
-        /* Основной контент */
-        .main-content {
-            flex: 1;
-            padding: 0 15px;
-            overflow-y: auto;
-        }
-
-        /* Реклама */
-        .banner {
-            background: linear-gradient(90deg, #ffd8a8, #ffc078);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            color: #333;
-            position: relative;
-        }
-
-        /* Карточка с номером */
-        .number-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .rarity {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            font-weight: bold;
-            color: #b8860b;
-            margin-bottom: 15px;
-        }
-        .rarity-bar {
-            display: flex;
-            gap: 5px;
-        }
-        .rarity-bar div {
-            width: 20px;
-            height: 6px;
-            border-radius: 3px;
-            background: #e5e5ea;
-        }
-        .rarity-bar div.active {
-            background: #d4af37;
-        }
-
-        /* Визуал номера (Отрисовка) */
-        .plate-container {
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
-        }
-        .license-plate {
-            background: #fff;
-            border: 4px solid #333;
-            border-radius: 8px;
-            padding: 5px 15px;
-            display: inline-flex;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .plate-flag {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-right: 10px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        .flag-img {
-            width: 20px;
-            height: 14px;
-            background: linear-gradient(to bottom, #d52b1e 33%, #0039a6 33%, #0039a6 66%, #d52b1e 66%);
-            border: 1px solid #ccc;
-            margin-bottom: 2px;
-        }
-        .plate-text {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 40px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            color: #111;
-        }
-
-        .stats {
-            font-size: 12px;
-            color: gray;
-            margin-top: 15px;
-            line-height: 1.5;
-        }
-        .stats span {
-            color: var(--gold);
-        }
-
-        /* Кнопка */
-        .btn-roll {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            width: 100%;
-            box-shadow: 0 4px 10px rgba(52, 199, 89, 0.4);
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .btn-roll:active {
-            transform: scale(0.98);
-        }
-        .btn-roll span {
-            background: rgba(255,255,255,0.3);
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-left: 10px;
-        }
-
-        /* Нижнее меню */
-        .nav {
-            display: flex;
-            justify-content: space-around;
-            background: var(--card-bg);
-            padding: 10px 0;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            z-index: 10;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 10px;
-            color: gray;
-            cursor: pointer;
-        }
-        .nav-item.active {
-            color: var(--accent);
-        }
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Шапка -->
-    <div class="header">
-        <div>
-            <div style="font-size: 12px; color: gray;">Ур. 83</div>
-            <div style="font-weight: bold;">🍀 80</div>
-        </div>
-        <div style="text-align: right;">
-            <div class="balance-sub">БАЛАНС</div>
-            <div class="balance" id="balanceDisplay">595,8 млн ₽</div>
-        </div>
-    </div>
-
-    <!-- Табы -->
-    <div class="tabs">
-        <div class="tab active">Номера</div>
-        <div class="tab">Машины</div>
-        <div class="tab">⭐ Магазин</div>
-    </div>
-
-    <!-- Основной контент -->
-    <div class="main-content">
-        <!-- Реклама -->
-        <div class="banner">
-            🍀 Удача x10 БЕСПЛАТНО<br>
-            <span style="font-size: 12px; font-weight: normal;">Задание - Удача x10 на 1 час</span>
-        </div>
-
-        <!-- Карточка -->
-        <div class="number-card">
-            <div class="rarity">
-                <span>Легендарный</span>
-                <span id="priceDisplay">1 473 855 ₽</span>
-            </div>
-            
-            <div class="rarity-bar">
-                <div class="active"></div>
-                <div class="active"></div>
-                <div></div>
-                <div></div>
-                <div></div>
-            </div>
-
-            <!-- Сам номер -->
-            <div class="plate-container">
-                <div class="license-plate">
-                    <div class="plate-flag">
-                        <div class="flag-img"></div>
-                        <div>AM</div>
-                    </div>
-                    <div class="plate-text" id="numberDisplay">93 GT 111</div>
-                </div>
-            </div>
-
-            <!-- Инфо -->
-            <div class="stats">
-                Код 93 - Армения<br><br>
-                🍀 Удача: лучший из 10 номеров<br>
-                Премиум-серия «GT» с круглыми цифрами <span>x30</span><br>
-                Три одинаковые цифры <span>x150</span>
-            </div>
-        </div>
-
-        <!-- Кнопка крутки -->
-        <button class="btn-roll" onclick="rollNumber()">
-            Крутить ещё <span>780 000 ₽</span>
-        </button>
-    </div>
-
-    <!-- Навигация -->
-    <div class="nav">
-        <div class="nav-item active">
-            <div class="nav-icon">▶️</div>
-            Играть
-        </div>
-        <div class="nav-item">
-            <div class="nav-icon">🏠</div>
-            Гараж
-        </div>
-        <div class="nav-item">
-            <div class="nav-icon">🏪</div>
-            Рынок
-        </div>
-        <div class="nav-item">
-            <div class="nav-icon">👥</div>
-            Друзья
-        </div>
-        <div class="nav-item">
-            <div class="nav-icon">⚙️</div>
-            Ещё
-        </div>
-    </div>
-
     <script>
         // Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        tg.setHeaderColor('#f2f2f7'); // Цвет шапки как у фона
+        tg.setHeaderColor('#f2f2f7');
 
-        // Логика кнопки
-        function rollNumber() {
-            const btn = document.querySelector('.btn-roll');
-            btn.innerText = "Крутим...";
-            
-            // Имитация загрузки (в реальности тут запрос к твоему Python-серверу)
-            setTimeout(() => {
-                // Меняем номер (рандом для визуала)
-                const letters = "АВЕКМНОРСТУХ";
-                const l1 = letters[Math.floor(Math.random() * letters.length)];
-                const l2 = letters[Math.floor(Math.random() * letters.length)];
-                const digits = Math.floor(Math.random() * 999) + 1;
-                
-                document.getElementById('numberDisplay').innerText = `77 ${l1}${l2} ${digits}`;
-                
-                // Восстанавливаем кнопку
-                btn.innerHTML = 'Крутить ещё <span>780 000 ₽</span>';
-                
-                // Вибрация (если поддерживается)
-                if (tg.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('medium');
-                }
-            }, 500);
+        // Получаем ID пользователя из Telegram
+        const userId = tg.initDataUnsafe.user.id;
+
+        // Функция для обновления баланса на экране
+        function updateBalance(newBalance) {
+            // Форматируем число с пробелами
+            document.getElementById('balanceDisplay').innerText = newBalance.toLocaleString('ru-RU') + ' ₽';
         }
-    </script>
-</body>
-</html>
+
+        // Запрос к серверу при нажатии на кнопку
+        async function rollNumber() {
+            const response = await fetch('https://1234-5678.ngrok-free.app/api/roll';
+            btn.innerText = "Крутим...";
+            btn.disabled = true;
+            
+            try {
+                // Отправляем запрос на наш Python-сервер
+                // ВАЖНО: Если ты тестируешь локально, укажи здесь твой локальный IP (например http://192.168.1.5:8000/api/roll)
+                // Если на хостинге, то https://твой-сайт.com/api/roll
+                const response = await fetch('/api/roll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, count: 1 })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Берем первый результат
+                const result = data.results[0];
+                
+                // Обновляем номер на экране
+                document.getElementById('numberDisplay').innerText = result.number;
+                
+                // Обновляем баланс
+                updateBalance(data.balance);
+
+                // Вибрация
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Ошибка соединения с сервером!");
+            } finally {
+                btn.innerHTML = 'Крутить ещё <span>1 000 ₽</span>';
+                btn.disabled = false;
+            }
+        }
+        
+        // При открытии страницы запрашиваем текущий баланс (можно сделать отдельный эндпоинт, но пока просто заглушка)
+        // updateBalance(200000); 
+    <import asyncio
+import random
+import json
+import os
+import time
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
+
+# ==================== НАСТРОЙКИ ====================
+TOKEN = "8886008389:AAFBFtU11on8c3cDOgW6E4ntn5M8kZM58gc" # Замени на токен от BotFather
+ADMIN_IDS = {7423966379}   # Замени на свой ID
+
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+
+# ==================== БАЗА ДАННЫХ ====================
+DATA_FILE = "data.json"
+data = {}
+
+if os.path.exists(DATA_FILE):
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+def save_data():
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def get_user(user_id):
+    uid = str(user_id)
+    if uid not in data:
+        data[uid] = {
+            "balance": 200000,
+            "garage": [],
+            "total_rolls": 0
+        }
+    return data[uid]
+
+# ==================== ЛОГИКА ИГРЫ ====================
+def do_roll_logic(user_id, count=1):
+    user = get_user(user_id)
+    
+    # Проверка баланса (примерная цена 1000 за крутку)
+    price = 1000 * count
+    if user["balance"] < price:
+        return {"error": "Недостаточно средств"}
+    
+    user["balance"] -= price
+    results = []
+    
+    for _ in range(count):
+        # Тут твоя логика выпадения (упрощенная для примера)
+        rarities = ["common", "rare", "epic", "legendary", "mythic"]
+        weights = [65, 25, 7, 2.5, 0.5]
+        rarity = random.choices(rarities, weights=weights)[0]
+        
+        # Генерация номера
+        letters = "АВЕКМНОРСТУХ"
+        l1 = random.choice(letters)
+        l2 = random.choice(letters)
+        l3 = random.choice(letters)
+        digits = f"{random.randint(1, 999):03d}"
+        number = f"{l1}{digits}{l2}{l3} 77"
+        
+        # Секретный номер (шанс 0.05%)
+        if random.random() < 0.0005:
+            number = "К026РМ 26"
+            rarity = "secret"
+            
+        user["total_rolls"] += 1
+        results.append({
+            "number": number,
+            "rarity": rarity,
+            "region": "77" # Упрощенно
+        })
+    
+    save_data()
+    return {"results": results, "balance": user["balance"]}
+
+# ==================== ВЕБ-СЕРВЕР (API) ====================
+app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# Этот эндпоинт обрабатывает нажатие кнопки "Крутить" в Mini App
+@app.post("/api/roll")
+async def api_roll(request: Request):
+    body = await request.json()
+    user_id = body.get("user_id")
+    count = body.get("count", 1)
+    
+    if not user_id:
+        return JSONResponse({"error": "No user_id"}, status_code=400)
+        
+    res = do_roll_logic(user_id, count)
+    if "error" in res:
+        return JSONResponse(res, status_code=400)
+        
+    return JSONResponse(res)
+
+# Этот эндпоинт отдает HTML-файл
+@app.get("/")
+async def get_index():
+    with open("index.html", "r", encoding="utf-8") as f:
+        html_content = f.read()
+    return HTMLResponse(content=html_content)
+
+# ==================== БОТ ====================
+@dp.message(Command("start"))
+async def cmd_start(message: types.Message):
+    get_user(message.from_user.id)
+    save_data()
+    await message.answer("Привет! Твой баланс: 200000 ₽. Открой игру через кнопку меню!")
+
+# ==================== ЗАПУСК ====================
+async def main():
+    # Запускаем веб-сервер в фоне
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    server = uvicorn.Server(config)
+    asyncio.create_task(server.serve())
+    
+    # Запускаем бота
+    print("Бот и сервер запущены...")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())>
