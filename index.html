@@ -24,7 +24,7 @@
                 // Отправляем запрос на наш Python-сервер
                 // ВАЖНО: Если ты тестируешь локально, укажи здесь твой локальный IP (например http://192.168.1.5:8000/api/roll)
                 // Если на хостинге, то https://твой-сайт.com/api/roll
-                const response = await fetch('/api/roll', {
+                const response = await fetch('https://crib-gainfully-gutless.ngrok-free.dev/api/roll', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: userId, count: 1 })
